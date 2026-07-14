@@ -1,7 +1,7 @@
 'use client';
 
 import {ExternalLink, FolderPlus, Link as LinkIcon, Plus, Search, StickyNote, Trash2} from 'lucide-react';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 
 // Shadcn UI 스타일의 Button 컴포넌트
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -64,13 +64,46 @@ const Badge = ({className, variant = 'default', ...props}: BadgeProps) => {
 	);
 };
 
+interface StoreProduct {
+	id: string;
+	url: string;
+	imageUrl: string;
+}
+
+interface Store {
+	id: string;
+	url: string;
+	storeName: string;
+	category: string;
+	tags: string[];
+	description: string;
+	memo: string;
+	products: StoreProduct[];
+	addedAt: string;
+}
+
 export default function DiggingApp() {
-	const [stores, setStores] = useState<any[]>([]);
+	const [stores, setStores] = useState<Store[]>([]);
 	const [urlInput, setUrlInput] = useState('');
 	const [memoInput, setMemoInput] = useState('');
 	const [isAdding, setIsAdding] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [errorMsg, setErrorMsg] = useState('');
+
+	useEffect(() => {
+		if (typeof window !== 'undefined') {
+			const params = new URLSearchParams(window.location.search);
+			const shareUrl = params.get('url') || params.get('text');
+			
+			if (shareUrl && shareUrl.startsWith('http')) {
+				setUrlInput(shareUrl);
+				
+				// URL 파라미터 초기화
+				const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+				window.history.replaceState({path: newUrl}, '', newUrl);
+			}
+		}
+	}, []);
 
 	const handleAddLink = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -101,7 +134,7 @@ export default function DiggingApp() {
 		if (existingStore) {
 			if (isProduct) {
 				// 이미 저장된 스토어에 새로운 상품을 추가하는 경우
-				const isDuplicateProduct = existingStore.products?.some(p => p.url === normalizedInput);
+				const isDuplicateProduct = existingStore.products?.some((p: any) => p.url === normalizedInput);
 				if (isDuplicateProduct) {
 					setErrorMsg('이미 아카이빙된 상품입니다.');
 					return;
