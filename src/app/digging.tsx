@@ -127,10 +127,19 @@ export default function DiggingApp() {
 			const storeName = meta.siteName || meta.title?.split(' - ')[0] || meta.title?.split('|')[0] || domainName.toUpperCase();
 			const description = meta.description || `${storeName}의 유니크한 아이템들을 만나보세요.`;
 
-			let tags = meta.keywords ? meta.keywords.split(',').map((k: string) => '#' + k.trim()).filter((k: string) => k !== '#').slice(0, 4) : [];
-			if (tags.length === 0) {
-				tags = ['#트렌디', '#신상'];
-			}
+			let tags = meta.keywords
+				? meta.keywords
+						.split(',')
+						.map((k: string) => k.trim())
+						.filter((k: string) => {
+							if (!k) return false;
+							if (k.length < 3 || k.length > 5) return false;
+							if (k.toLowerCase() === storeName.toLowerCase()) return false;
+							return true;
+						})
+						.map((k: string) => '#' + k)
+						.slice(0, 4)
+				: [];
 
 			// 메타데이터 기반으로 상품 여부 추가 검증
 			if (meta.type?.includes('product')) {
