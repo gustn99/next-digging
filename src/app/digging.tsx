@@ -84,11 +84,32 @@ interface Store {
 
 export default function DiggingApp() {
 	const [stores, setStores] = useState<Store[]>([]);
+	const [isMounted, setIsMounted] = useState(false);
 	const [urlInput, setUrlInput] = useState('');
 	const [memoInput, setMemoInput] = useState('');
 	const [isAdding, setIsAdding] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [errorMsg, setErrorMsg] = useState('');
+
+	// 로컬 스토리지에서 데이터 불러오기
+	useEffect(() => {
+		setIsMounted(true);
+		const savedStores = localStorage.getItem('digging_stores');
+		if (savedStores) {
+			try {
+				setStores(JSON.parse(savedStores));
+			} catch (e) {
+				console.error('Failed to parse stores from local storage', e);
+			}
+		}
+	}, []);
+
+	// 데이터가 변경될 때마다 로컬 스토리지에 저장하기
+	useEffect(() => {
+		if (isMounted) {
+			localStorage.setItem('digging_stores', JSON.stringify(stores));
+		}
+	}, [stores, isMounted]);
 
 	useEffect(() => {
 		if (typeof window !== 'undefined') {
