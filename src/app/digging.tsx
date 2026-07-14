@@ -121,14 +121,27 @@ export default function DiggingApp() {
 			if (!res.ok) throw new Error('Failed to fetch');
 			const meta = await res.json();
 
+			let rootMeta = meta;
+			// 상세 페이지 등 서브 링크인 경우 루트 페이지 메타데이터도 가져옵니다.
+			if (normalizedInput !== origin && normalizedInput !== origin + '/') {
+				try {
+					const rootRes = await fetch(`/api/metadata?url=${encodeURIComponent(origin)}`);
+					if (rootRes.ok) {
+						rootMeta = await rootRes.json();
+					}
+				} catch (e) {
+					console.warn('Failed to fetch root metadata', e);
+				}
+			}
+
 			const domain = origin.replace(/^(https?:\/\/)?(www\.)?/, '');
 			const domainName = domain.split('.')[0].toLowerCase();
 
-			const storeName = meta.siteName || meta.title?.split(' - ')[0] || meta.title?.split('|')[0] || domainName.toUpperCase();
-			const description = meta.description || `${storeName}의 유니크한 아이템들을 만나보세요.`;
+			const storeName = rootMeta.siteName || rootMeta.title?.split(' - ')[0] || rootMeta.title?.split('|')[0] || domainName.toUpperCase();
+			const description = rootMeta.description || `${storeName}의 유니크한 아이템들을 만나보세요.`;
 
-			let tags = meta.keywords
-				? meta.keywords
+			let tags = rootMeta.keywords
+				? rootMeta.keywords
 						.split(',')
 						.map((k: string) => k.trim())
 						.filter((k: string) => {
@@ -141,7 +154,7 @@ export default function DiggingApp() {
 						.slice(0, 4)
 				: [];
 
-			// 메타데이터 기반으로 상품 여부 추가 검증
+			// 메타데이터 기반으로 상품 여부 추가 검증 (상세 페이지의 meta 사용)
 			if (meta.type?.includes('product')) {
 				isProduct = true;
 			}
