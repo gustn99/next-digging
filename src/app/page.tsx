@@ -209,7 +209,15 @@ export default function Home() {
 						<div className="w-8 h-8 bg-zinc-900 text-white rounded-lg flex items-center justify-center font-bold text-xl">
 							D
 						</div>
-						<h1 className="text-xl font-bold tracking-tight">Digging</h1>
+						<h1 className="text-xl font-bold tracking-tight flex items-center">Digging
+							{/*<span>D</span>*/}
+							{/*<span className="relative inline-block">*/}
+							{/*	<span className="invisible">i</span>*/}
+							{/*	<span className="absolute inset-0 text-primary-teal" style={{ clipPath: 'inset(0 0 65% 0)' }}>i</span>*/}
+							{/*	<span className="absolute inset-0 text-zinc-900" style={{ clipPath: 'inset(35% 0 0 0)' }}>i</span>*/}
+							{/*</span>*/}
+							{/*<span>gging</span>*/}
+						</h1>
 					</div>
 					<nav className="hidden sm:flex gap-6 text-sm font-medium text-zinc-500">
 						<a href="#" className="text-zinc-900">내 아카이브</a>
