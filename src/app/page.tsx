@@ -4,7 +4,7 @@ import {Badge, Button, Input} from '@/components/ui';
 import {useStores} from '@/lib/storeHooks';
 import {Store} from '@/lib/types';
 import {getStaticImageUrl} from '@/lib/utils';
-import {ChevronRight, ExternalLink, FolderPlus, Link as LinkIcon, Plus, Search, StickyNote, Trash2} from 'lucide-react';
+import {ChevronRight, ExternalLink, FolderPlus, Link as LinkIcon, Plus, Search, Star, StickyNote, Trash2} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 import React, {useEffect, useState} from 'react';
 
@@ -346,6 +346,11 @@ export default function Home() {
 												>
 													<div className="w-22 h-22 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-50 relative group-hover/item:border-zinc-300 transition-colors">
 														<img src={getStaticImageUrl(product.imageUrl)} alt="상품 이미지" className="w-full h-full object-cover"/>
+														{!product.isCrawled && (
+															<div className="absolute top-1.5 right-1.5 z-10 drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
+																<Star className="h-4 w-4 text-teal-300 fill-teal-300"/>
+															</div>
+														)}
 														<div className="absolute inset-0 bg-black/0 group-hover/item:bg-black/10 transition-colors flex items-center justify-center">
 															<ExternalLink className="text-white opacity-0 group-hover/item:opacity-100 h-5 w-5 drop-shadow-md"/>
 														</div>
