@@ -39,12 +39,12 @@ export async function getMetadata(url: string) {
       } catch (e) {}
     }
 
-    // 휴리스틱 방식으로 상품 리스트(이미지+링크) 추출 (최대 4개)
+    // 휴리스틱 방식으로 상품 리스트(이미지+링크) 추출 (최대 20개)
     const extractedProducts: Array<{ url: string, imageUrl: string }> = [];
     
     $('a').each((i, el) => {
       // 넉넉하게 추출 후 중복/유효성 검사
-      if (extractedProducts.length >= 10) return; 
+      if (extractedProducts.length >= 40) return; 
 
       const href = $(el).attr('href');
       const imgTag = $(el).find('img').first();
@@ -106,7 +106,7 @@ export async function getMetadata(url: string) {
       siteName: siteName.trim(),
       type: type.trim(),
       keywords: keywords.trim(),
-      extractedProducts: extractedProducts.slice(0, 4)
+      extractedProducts: extractedProducts.slice(0, 20)
     };
   } catch (error) {
     console.error(`Error fetching metadata for ${url}:`, error);

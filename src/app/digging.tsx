@@ -1,6 +1,6 @@
 'use client';
 
-import {ExternalLink, FolderPlus, Link as LinkIcon, Plus, Search, StickyNote, Trash2} from 'lucide-react';
+import {ChevronRight, ExternalLink, FolderPlus, Link as LinkIcon, Plus, Search, StickyNote, Trash2, ArrowLeft} from 'lucide-react';
 import React, {useState, useEffect} from 'react';
 
 // Shadcn UI 스타일의 Button 컴포넌트
@@ -68,6 +68,7 @@ interface StoreProduct {
 	id: string;
 	url: string;
 	imageUrl: string;
+	isCrawled?: boolean;
 }
 
 interface Store {
@@ -90,6 +91,7 @@ export default function DiggingApp() {
 	const [isAdding, setIsAdding] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [errorMsg, setErrorMsg] = useState('');
+	const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
 
 	// 로컬 스토리지에서 데이터 불러오기
 	useEffect(() => {
@@ -255,14 +257,15 @@ export default function DiggingApp() {
 						});
 					}
 
-					// 크롤링된 상품들이 있으면 추가 (중복 방지, 최대 5개 노출)
+					// 크롤링된 상품들이 있으면 추가 (중복 방지, 최대 20개 노출)
 					if (rootMeta.extractedProducts && rootMeta.extractedProducts.length > 0) {
 						rootMeta.extractedProducts.forEach((ep: any) => {
-							if (!products.some(p => p.url === ep.url) && products.length < 5) {
+							if (!products.some(p => p.url === ep.url) && products.length < 20) {
 								products.push({
 									id: Math.random().toString(36).substring(2, 15),
 									url: ep.url,
 									imageUrl: ep.imageUrl,
+									isCrawled: true,
 								});
 							}
 						});
@@ -327,9 +330,101 @@ export default function DiggingApp() {
 			</header>
 
 			<main className="max-w-4xl mx-auto px-4 py-8">
-				{/* Link Input Section */}
-				<section className="mb-10">
-					<div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm">
+				{selectedStoreId ? (() => {
+					const store = stores.find(s => s.id === selectedStoreId);
+					if (!store) return null;
+					const userProducts = store.products.filter(p => !p.isCrawled);
+					const crawledProducts = store.products.filter(p => p.isCrawled);
+
+					return (
+						<div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+							<button 
+								onClick={() => setSelectedStoreId(null)}
+								className="mb-6 flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+							>
+								<ArrowLeft className="h-4 w-4 mr-1" />
+								목록으로 돌아가기
+							</button>
+
+							<div className="bg-white rounded-xl border border-zinc-200 overflow-hidden shadow-sm p-6 sm:p-8 mb-8">
+								<div className="flex justify-between items-start mb-4">
+									<div>
+										<div className="flex items-center gap-2 mb-2">
+											<h2 className="text-2xl font-bold text-zinc-900">{store.storeName}</h2>
+											<Badge className="bg-zinc-900 text-white border-none shadow-none">{store.category}</Badge>
+										</div>
+										<a href={store.url} target="_blank" rel="noreferrer" className="text-sm text-zinc-500 hover:text-zinc-800 hover:underline flex items-center gap-1">
+											{store.url} <ExternalLink className="h-3 w-3" />
+										</a>
+									</div>
+								</div>
+								
+								<p className="text-zinc-700 leading-relaxed">{store.description}</p>
+								
+								{store.memo && (
+									<div className="bg-zinc-50 border border-zinc-100 rounded-lg p-4 mb-6 mt-4 flex items-start gap-3">
+										<StickyNote className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
+										<p className="text-zinc-800 whitespace-pre-wrap">{store.memo}</p>
+									</div>
+								)}
+
+								<div className="flex flex-wrap gap-2 mt-auto">
+									{store.tags.map(tag => (
+										<span key={tag} className="px-2.5 py-1 bg-zinc-100 text-zinc-600 rounded-md text-xs font-medium">{tag}</span>
+									))}
+								</div>
+							</div>
+
+							{userProducts.length > 0 && (
+								<div className="mb-12">
+									<h3 className="text-lg font-bold text-zinc-900 mb-4 flex items-center gap-2">
+										내가 저장한 상품 <span className="bg-zinc-100 text-zinc-600 text-xs py-0.5 px-2 rounded-full">{userProducts.length}</span>
+									</h3>
+									<div className="grid grid-cols-3 gap-2">
+										{userProducts.map(product => (
+											<a key={product.id} href={product.url} target="_blank" rel="noreferrer" className="group block">
+												<div className="aspect-square rounded-xl overflow-hidden border border-zinc-200 bg-white relative group-hover:border-zinc-300 transition-colors">
+													<img src={product.imageUrl} alt="저장한 상품" className="w-full h-full object-cover" />
+													<div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+														<ExternalLink className="text-white opacity-0 group-hover:opacity-100 h-6 w-6 drop-shadow-md" />
+													</div>
+												</div>
+											</a>
+										))}
+									</div>
+								</div>
+							)}
+
+							<div>
+								<h3 className="text-lg font-bold text-zinc-900 mb-4 flex items-center gap-2">
+									이 스토어의 다른 상품들 <span className="bg-zinc-100 text-zinc-600 text-xs py-0.5 px-2 rounded-full">{crawledProducts.length}</span>
+								</h3>
+								{crawledProducts.length > 0 ? (
+									<div className="grid grid-cols-3 gap-2">
+										{crawledProducts.map(product => (
+											<a key={product.id} href={product.url} target="_blank" rel="noreferrer" className="group block">
+												<div className="aspect-square rounded-xl overflow-hidden border border-zinc-200 bg-white relative group-hover:border-zinc-300 transition-colors">
+													<img src={product.imageUrl} alt="크롤링된 상품" className="w-full h-full object-cover" />
+													<div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+														<ExternalLink className="text-white opacity-0 group-hover:opacity-100 h-6 w-6 drop-shadow-md" />
+													</div>
+												</div>
+											</a>
+										))}
+									</div>
+								) : (
+									<div className="py-12 text-center bg-white rounded-xl border border-dashed border-zinc-300">
+										<p className="text-zinc-500">자동으로 찾은 추가 상품이 없습니다.</p>
+									</div>
+								)}
+							</div>
+						</div>
+					);
+				})() : (
+					<>
+						{/* Link Input Section */}
+						<section className="mb-10">
+							<div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-sm">
 						<h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
 							<LinkIcon className="h-5 w-5"/>
 							새로운 스토어 발굴하기
@@ -445,10 +540,14 @@ export default function DiggingApp() {
 									</div>
 								)}
 
-								{/* 상품 리스트 가로 스크롤 영역 */}
-								{store.products && store.products.length > 0 && (
+								{/* 상품 리스트 가로 스크롤 영역 (상품이 없어도 더보기 버튼 노출) */}
+								{(() => {
+									const userProducts = (store.products || []).filter(p => !p.isCrawled);
+									const crawledProducts = (store.products || []).filter(p => p.isCrawled);
+									const displayProducts = [...userProducts, ...crawledProducts].slice(0, 4);
+									return (
 									<div className="flex gap-3 overflow-x-auto pb-2 mb-3 mt-1 scrollbar-hide">
-										{store.products.map(product => (
+										{displayProducts.map(product => (
 											<a
 												key={product.id}
 												href={product.url}
@@ -465,8 +564,21 @@ export default function DiggingApp() {
 												</div>
 											</a>
 										))}
+
+										{/* 더보기 버튼 (상세 페이지 이동) */}
+										<button
+											onClick={() => {
+												setSelectedStoreId(store.id);
+												window.scrollTo({ top: 0, behavior: 'smooth' });
+											}}
+											className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 flex flex-col items-center justify-center text-zinc-500 hover:text-zinc-900 hover:border-zinc-400 hover:bg-zinc-100 transition-colors"
+										>
+											<ChevronRight className="h-5 w-5 mb-1 text-zinc-400"/>
+											<span className="text-xs font-medium">더보기</span>
+										</button>
 									</div>
-								)}
+									);
+								})()}
 
 								{/* Tags & Actions */}
 								<div className="flex items-center justify-between mt-auto pt-2 border-t border-zinc-100">
@@ -489,6 +601,8 @@ export default function DiggingApp() {
 							</div>
 						))}
 					</div>
+				)}
+					</>
 				)}
 			</main>
 		</div>
