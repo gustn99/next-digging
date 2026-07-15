@@ -64,6 +64,15 @@ const Badge = ({className, variant = 'default', ...props}: BadgeProps) => {
 	);
 };
 
+const getStaticImageUrl = (url: string) => {
+	if (!url) return '';
+	const lowerUrl = url.toLowerCase();
+	if (lowerUrl.includes('.gif') || lowerUrl.includes('.webp')) {
+		return `/api/image?url=${encodeURIComponent(url)}`;
+	}
+	return url;
+};
+
 interface StoreProduct {
 	id: string;
 	url: string;
@@ -380,9 +389,9 @@ export default function DiggingApp() {
 									<h3 className="text-lg font-bold text-zinc-900 mb-4 flex items-center gap-2">
 										내가 저장한 상품 <span className="bg-zinc-100 text-zinc-600 text-xs py-0.5 px-2 rounded-full">{userProducts.length}</span>
 									</h3>
-									<div className="grid grid-cols-3 gap-2">
+									<div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
 										{userProducts.map(product => (
-											<a key={product.id} href={product.url} target="_blank" rel="noreferrer" className="group block">
+											<a key={product.id} href={product.url} target="_blank" rel="noreferrer" className="shrink-0 w-[calc(50%-4px)] group block">
 												<div className="aspect-square rounded-xl overflow-hidden border border-zinc-200 bg-white relative group-hover:border-zinc-300 transition-colors">
 													<img src={product.imageUrl} alt="저장한 상품" className="w-full h-full object-cover" />
 													<div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
@@ -400,7 +409,7 @@ export default function DiggingApp() {
 									이 스토어의 다른 상품들 <span className="bg-zinc-100 text-zinc-600 text-xs py-0.5 px-2 rounded-full">{crawledProducts.length}</span>
 								</h3>
 								{crawledProducts.length > 0 ? (
-									<div className="grid grid-cols-3 gap-2">
+									<div className="grid grid-cols-2 gap-2">
 										{crawledProducts.map(product => (
 											<a key={product.id} href={product.url} target="_blank" rel="noreferrer" className="group block">
 												<div className="aspect-square rounded-xl overflow-hidden border border-zinc-200 bg-white relative group-hover:border-zinc-300 transition-colors">
@@ -557,7 +566,7 @@ export default function DiggingApp() {
 												title="상품 상세 보기"
 											>
 												<div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-50 relative group-hover/item:border-zinc-300 transition-colors">
-													<img src={product.imageUrl} alt="상품 이미지" className="w-full h-full object-cover"/>
+													<img src={getStaticImageUrl(product.imageUrl)} alt="상품 이미지" className="w-full h-full object-cover"/>
 													<div className="absolute inset-0 bg-black/0 group-hover/item:bg-black/10 transition-colors flex items-center justify-center">
 														<ExternalLink className="text-white opacity-0 group-hover/item:opacity-100 h-5 w-5 drop-shadow-md"/>
 													</div>
