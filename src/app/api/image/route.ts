@@ -32,7 +32,14 @@ export async function GET(request: NextRequest) {
 		.png()
 		.toBuffer();
 
-		return new NextResponse(staticImageBuffer, {
+		// Node.js의 Buffer는 내부적으로 큰 ArrayBuffer를 공유(pool)할 수 있으므로,
+		// NextResponse에 안전하게 전달하기 위해 정확한 바이트 구간만 추출한 ArrayBuffer로 변환합니다.
+		const safeArrayBuffer = staticImageBuffer.buffer.slice(
+			staticImageBuffer.byteOffset,
+			staticImageBuffer.byteOffset + staticImageBuffer.byteLength
+		);
+
+		return new NextResponse(safeArrayBuffer, {
 			headers: {
 				'Content-Type': 'image/png',
 				'Cache-Control': 'public, max-age=31536000, immutable',
