@@ -89,9 +89,9 @@ function ShopDetailContent() {
 							<h3 className="text-lg font-bold text-zinc-900 mb-4 flex items-center gap-2">
 								내가 저장한 상품 <span className="bg-zinc-100 text-zinc-600 text-xs py-0.5 px-2 rounded-full">{userProducts.length}</span>
 							</h3>
-							<div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+							<div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide">
 								{userProducts.map(product => (
-									<a key={product.id} href={product.url} target="_blank" rel="noreferrer" className="shrink-0 w-[calc(50%-4px)] group block">
+									<a key={product.id} href={product.url} target="_blank" rel="noreferrer" className="shrink-0 w-[calc(50%-4px)] md:w-[calc(33.333%-8px)] group block">
 										<div className="aspect-square rounded-xl overflow-hidden border border-zinc-200 bg-white relative group-hover:border-zinc-300 transition-colors">
 											<img src={product.imageUrl} alt="저장한 상품" className="w-full h-full object-cover" />
 											<div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
@@ -113,7 +113,7 @@ function ShopDetailContent() {
 							이 스토어의 다른 상품들 <span className="bg-zinc-100 text-zinc-600 text-xs py-0.5 px-2 rounded-full">{crawledProducts.length}</span>
 						</h3>
 						{crawledProducts.length > 0 ? (
-							<div className="grid grid-cols-2 gap-2">
+							<div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
 								{crawledProducts.map(product => (
 									<a key={product.id} href={product.url} target="_blank" rel="noreferrer" className="group block">
 										<div className="aspect-square rounded-xl overflow-hidden border border-zinc-200 bg-white relative group-hover:border-zinc-300 transition-colors">
