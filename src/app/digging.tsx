@@ -246,12 +246,25 @@ export default function DiggingApp() {
 					}
 				} else {
 					// 새로운 스토어(또는 상품) 등록
-					const products = [];
+					const products: any[] = [];
 					if (isProduct) {
 						products.push({
 							id: Math.random().toString(36).substring(2, 15),
 							url: normalizedInput,
 							imageUrl: meta.image || `https://picsum.photos/seed/${Math.random()}/200/200`,
+						});
+					}
+
+					// 크롤링된 상품들이 있으면 추가 (중복 방지, 최대 5개 노출)
+					if (rootMeta.extractedProducts && rootMeta.extractedProducts.length > 0) {
+						rootMeta.extractedProducts.forEach((ep: any) => {
+							if (!products.some(p => p.url === ep.url) && products.length < 5) {
+								products.push({
+									id: Math.random().toString(36).substring(2, 15),
+									url: ep.url,
+									imageUrl: ep.imageUrl,
+								});
+							}
 						});
 					}
 
