@@ -1,16 +1,16 @@
 'use client';
 
+import {Badge, Button, Input} from '@/components/ui';
+import {useStores} from '@/lib/storeHooks';
+import {Store} from '@/lib/types';
+import {getStaticImageUrl} from '@/lib/utils';
 import {ChevronRight, ExternalLink, FolderPlus, Link as LinkIcon, Plus, Search, StickyNote, Trash2} from 'lucide-react';
-import React, {useState, useEffect} from 'react';
-import { useRouter } from 'next/navigation';
-import { Button, Input, Badge } from '@/components/ui';
-import { useStores } from '@/lib/storeHooks';
-import { getStaticImageUrl } from '@/lib/utils';
-import { Store } from '@/lib/types';
+import {useRouter} from 'next/navigation';
+import React, {useEffect, useState} from 'react';
 
 export default function Home() {
 	const router = useRouter();
-	const { stores, saveStores, isMounted } = useStores();
+	const {stores, saveStores, isMounted} = useStores();
 	const [urlInput, setUrlInput] = useState('');
 	const [memoInput, setMemoInput] = useState('');
 	const [isAdding, setIsAdding] = useState(false);
@@ -21,10 +21,10 @@ export default function Home() {
 		if (typeof window !== 'undefined') {
 			const params = new URLSearchParams(window.location.search);
 			const shareUrl = params.get('url') || params.get('text');
-			
+
 			if (shareUrl && shareUrl.startsWith('http')) {
 				setUrlInput(shareUrl);
-				const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+				const newUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
 				window.history.replaceState({path: newUrl}, '', newUrl);
 			}
 		}
@@ -96,16 +96,16 @@ export default function Home() {
 
 			let tags = rootMeta.keywords
 				? rootMeta.keywords
-						.split(',')
-						.map((k: string) => k.trim())
-						.filter((k: string) => {
-							if (!k) return false;
-							if (k.length < 3 || k.length > 5) return false;
-							if (k.toLowerCase() === storeName.toLowerCase()) return false;
-							return true;
-						})
-						.map((k: string) => '#' + k)
-						.slice(0, 4)
+				.split(',')
+				.map((k: string) => k.trim())
+				.filter((k: string) => {
+					if (!k) return false;
+					if (k.length < 3 || k.length > 5) return false;
+					if (k.toLowerCase() === storeName.toLowerCase()) return false;
+					return true;
+				})
+				.map((k: string) => '#' + k)
+				.slice(0, 4)
 				: [];
 
 			if (meta.type?.includes('product')) {
@@ -334,35 +334,35 @@ export default function Home() {
 									const crawledProducts = (store.products || []).filter(p => p.isCrawled);
 									const displayProducts = [...userProducts, ...crawledProducts].slice(0, 4);
 									return (
-									<div className="flex gap-3 overflow-x-auto pb-2 mb-3 mt-1 scrollbar-hide">
-										{displayProducts.map(product => (
-											<a
-												key={product.id}
-												href={product.url}
-												target="_blank"
-												rel="noreferrer"
-												className="shrink-0 group/item relative"
-												title="상품 상세 보기"
-											>
-												<div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-50 relative group-hover/item:border-zinc-300 transition-colors">
-													<img src={getStaticImageUrl(product.imageUrl)} alt="상품 이미지" className="w-full h-full object-cover"/>
-													<div className="absolute inset-0 bg-black/0 group-hover/item:bg-black/10 transition-colors flex items-center justify-center">
-														<ExternalLink className="text-white opacity-0 group-hover/item:opacity-100 h-5 w-5 drop-shadow-md"/>
+										<div className="flex gap-1 overflow-x-auto pb-2 mt-1 scrollbar-hide">
+											{displayProducts.map(product => (
+												<a
+													key={product.id}
+													href={product.url}
+													target="_blank"
+													rel="noreferrer"
+													className="shrink-0 group/item relative"
+													title="상품 상세 보기"
+												>
+													<div className="w-22 h-22 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-50 relative group-hover/item:border-zinc-300 transition-colors">
+														<img src={getStaticImageUrl(product.imageUrl)} alt="상품 이미지" className="w-full h-full object-cover"/>
+														<div className="absolute inset-0 bg-black/0 group-hover/item:bg-black/10 transition-colors flex items-center justify-center">
+															<ExternalLink className="text-white opacity-0 group-hover/item:opacity-100 h-5 w-5 drop-shadow-md"/>
+														</div>
 													</div>
-												</div>
-											</a>
-										))}
+												</a>
+											))}
 
-										<button
-											onClick={() => {
-												router.push(`/shop?id=${store.id}`);
-											}}
-											className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 flex flex-col items-center justify-center text-zinc-500 hover:text-zinc-900 hover:border-zinc-400 hover:bg-zinc-100 transition-colors"
-										>
-											<ChevronRight className="h-5 w-5 mb-1 text-zinc-400"/>
-											<span className="text-xs font-medium">더보기</span>
-										</button>
-									</div>
+											<button
+												onClick={() => {
+													router.push(`/shop?id=${store.id}`);
+												}}
+												className="shrink-0 w-22 h-22 sm:w-24 sm:h-24 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 flex flex-col items-center justify-center text-zinc-500 hover:text-zinc-900 hover:border-zinc-400 hover:bg-zinc-100 transition-colors"
+											>
+												<ChevronRight className="h-5 w-5 mb-1 text-zinc-400"/>
+												<span className="text-xs font-medium">더보기</span>
+											</button>
+										</div>
 									);
 								})()}
 
