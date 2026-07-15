@@ -35,34 +35,28 @@ function ShopDetailContent() {
 	const crawledProducts = (store.products || []).filter(p => p.isCrawled);
 
 	return (
-		<div className="min-h-screen bg-zinc-50 font-sans text-zinc-900">
-			<header className="bg-white border-b border-zinc-200 sticky top-0 z-10">
-				<div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-					<div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
-						<div className="w-8 h-8 bg-zinc-900 text-white rounded-lg flex items-center justify-center font-bold text-xl">
-							D
-						</div>
-						<h1 className="text-xl font-bold tracking-tight">Digging</h1>
-					</div>
+		<div className="min-h-screen bg-white font-sans text-zinc-900">
+			<header className="bg-white border-b border-zinc-100 sticky top-0 z-10">
+				<div className="max-w-4xl mx-auto px-4 h-16 flex items-center">
+					<button 
+						onClick={() => router.push('/')}
+						className="flex items-center justify-center p-2 -ml-2 text-zinc-900 hover:bg-zinc-100 rounded-full transition-colors"
+						aria-label="목록으로 돌아가기"
+					>
+						<ArrowLeft className="h-6 w-6" />
+					</button>
 				</div>
 			</header>
 
-			<main className="max-w-4xl mx-auto px-4 py-8">
+			<main className="max-w-4xl mx-auto px-4 py-6">
 				<div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-					<button 
-						onClick={() => router.push('/')}
-						className="mb-6 flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
-					>
-						<ArrowLeft className="h-4 w-4 mr-1" />
-						목록으로 돌아가기
-					</button>
 
-					<div className="bg-white rounded-xl border border-zinc-200 overflow-hidden shadow-sm p-6 sm:p-8 mb-8">
+					<div className="mb-5">
 						<div className="flex justify-between items-start mb-4">
 							<div>
 								<div className="flex items-center gap-2 mb-2">
-									<h2 className="text-2xl font-bold text-zinc-900">{store.storeName}</h2>
-									<Badge className="bg-zinc-900 text-white border-none shadow-none">{store.category}</Badge>
+									<h2 className="text-2xl font-bold text-zinc-900 tracking-tight">{store.storeName}</h2>
+									<Badge className="bg-zinc-900 text-white border-none shadow-none hover:bg-zinc-800 transition-colors">{store.category}</Badge>
 								</div>
 								<a href={store.url} target="_blank" rel="noreferrer" className="text-sm text-zinc-500 hover:text-zinc-800 hover:underline flex items-center gap-1">
 									{store.url} <ExternalLink className="h-3 w-3" />
@@ -70,24 +64,28 @@ function ShopDetailContent() {
 							</div>
 						</div>
 						
-						<p className="text-zinc-700 leading-relaxed">{store.description}</p>
+						<p className="text-zinc-700 leading-relaxed text-base">{store.description}</p>
 						
 						{store.memo && (
-							<div className="bg-zinc-50 border border-zinc-100 rounded-lg p-4 mb-6 mt-4 flex items-start gap-3">
+							<div className="bg-zinc-50 border border-zinc-100 rounded-xl p-4 mt-5 flex items-start gap-3">
 								<StickyNote className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
-								<p className="text-zinc-800 whitespace-pre-wrap">{store.memo}</p>
+								<p className="text-zinc-800 whitespace-pre-wrap leading-relaxed">{store.memo}</p>
 							</div>
 						)}
 
-						<div className="flex flex-wrap gap-2 mt-auto">
+						<div className="flex flex-wrap gap-2 mt-6">
 							{store.tags.map(tag => (
 								<span key={tag} className="px-2.5 py-1 bg-zinc-100 text-zinc-600 rounded-md text-xs font-medium">{tag}</span>
 							))}
 						</div>
 					</div>
 
+					{/* Section Divider */}
+					<div className="h-2 bg-zinc-100/60 border-y border-zinc-200/50 -mx-4 mb-8"></div>
+
 					{userProducts.length > 0 && (
-						<div className="mb-12">
+						<>
+						<div className="mb-6">
 							<h3 className="text-lg font-bold text-zinc-900 mb-4 flex items-center gap-2">
 								내가 저장한 상품 <span className="bg-zinc-100 text-zinc-600 text-xs py-0.5 px-2 rounded-full">{userProducts.length}</span>
 							</h3>
@@ -104,6 +102,10 @@ function ShopDetailContent() {
 								))}
 							</div>
 						</div>
+						
+						{/* Section Divider */}
+						<div className="h-2 bg-zinc-100/60 border-y border-zinc-200/50 -mx-4 mb-8 mt-2"></div>
+						</>
 					)}
 
 					<div>
