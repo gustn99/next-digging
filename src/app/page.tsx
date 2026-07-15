@@ -311,7 +311,7 @@ export default function Home() {
 									</div>
 									<button
 										onClick={() => handleDelete(store.id)}
-										className="text-zinc-400 hover:text-red-500 transition-colors shrink-0 p-1.5 rounded-md hover:bg-red-50 opacity-0 group-hover:opacity-100"
+										className="text-zinc-400 hover:text-red-500 transition-colors shrink-0 p-1.5 rounded-md hover:bg-red-50"
 										title="삭제"
 									>
 										<Trash2 className="h-4 w-4"/>
