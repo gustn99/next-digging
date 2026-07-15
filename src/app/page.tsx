@@ -140,7 +140,7 @@ export default function Home() {
 					nextStores = [updatedStore, ...nextStores];
 				}
 			} else {
-				const products: {id: string, url: string, imageUrl: string, isCrawled?: boolean}[] = [];
+				const products: { id: string, url: string, imageUrl: string, isCrawled?: boolean }[] = [];
 				if (isProduct) {
 					products.push({
 						id: Math.random().toString(36).substring(2, 15),
@@ -150,7 +150,7 @@ export default function Home() {
 				}
 
 				if (rootMeta.extractedProducts && rootMeta.extractedProducts.length > 0) {
-					rootMeta.extractedProducts.forEach((ep: {url: string, imageUrl: string}) => {
+					rootMeta.extractedProducts.forEach((ep: { url: string, imageUrl: string }) => {
 						if (!products.some(p => p.url === ep.url) && products.length < 20) {
 							products.push({
 								id: Math.random().toString(36).substring(2, 15),
@@ -356,7 +356,7 @@ export default function Home() {
 													<div className="w-22 h-22 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-zinc-200 bg-zinc-50 relative group-hover/item:border-zinc-300 transition-colors">
 														<img src={getStaticImageUrl(product.imageUrl)} alt="상품 이미지" className="w-full h-full object-cover"/>
 														{!product.isCrawled && (
-															<div className="absolute top-1.5 right-1.5 z-10 drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
+															<div className="absolute top-1.5 right-1.5 z-10 drop-shadow-sm">
 																<Star className="h-4 w-4 text-teal-300 fill-teal-300"/>
 															</div>
 														)}
