@@ -23,6 +23,7 @@ export default function Home() {
 			const shareUrl = params.get('url') || params.get('text');
 
 			if (shareUrl && shareUrl.startsWith('http')) {
+				// eslint-disable-next-line react-hooks/set-state-in-effect
 				setUrlInput(shareUrl);
 				const newUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
 				window.history.replaceState({path: newUrl}, '', newUrl);
@@ -94,7 +95,7 @@ export default function Home() {
 			const storeName = rootMeta.siteName || rootMeta.title?.split(' - ')[0] || rootMeta.title?.split('|')[0] || domainName.toUpperCase();
 			const description = rootMeta.description || `${storeName}의 유니크한 아이템들을 만나보세요.`;
 
-			let tags = rootMeta.keywords
+			const tags = rootMeta.keywords
 				? rootMeta.keywords
 				.split(',')
 				.map((k: string) => k.trim())
@@ -139,7 +140,7 @@ export default function Home() {
 					nextStores = [updatedStore, ...nextStores];
 				}
 			} else {
-				const products: any[] = [];
+				const products: {id: string, url: string, imageUrl: string, isCrawled?: boolean}[] = [];
 				if (isProduct) {
 					products.push({
 						id: Math.random().toString(36).substring(2, 15),
@@ -149,7 +150,7 @@ export default function Home() {
 				}
 
 				if (rootMeta.extractedProducts && rootMeta.extractedProducts.length > 0) {
-					rootMeta.extractedProducts.forEach((ep: any) => {
+					rootMeta.extractedProducts.forEach((ep: {url: string, imageUrl: string}) => {
 						if (!products.some(p => p.url === ep.url) && products.length < 20) {
 							products.push({
 								id: Math.random().toString(36).substring(2, 15),
