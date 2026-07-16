@@ -1,5 +1,4 @@
 import {NextRequest, NextResponse} from 'next/server';
-import sharp from 'sharp';
 
 export async function GET(request: NextRequest) {
 	const url = request.nextUrl.searchParams.get('url');
@@ -7,9 +6,6 @@ export async function GET(request: NextRequest) {
 	if (!url) {
 		return new NextResponse('Missing url parameter', {status: 400});
 	}
-
-	let originalArrayBuffer: ArrayBuffer | null = null;
-	let contentType = 'image/jpeg';
 
 	try {
 		const response = await fetch(url, {
@@ -22,43 +18,17 @@ export async function GET(request: NextRequest) {
 			throw new Error(`Failed to fetch image: ${response.statusText}`);
 		}
 
-		contentType = response.headers.get('content-type') || contentType;
-		originalArrayBuffer = await response.arrayBuffer();
-		const originalBuffer = Buffer.from(originalArrayBuffer);
+		const contentType = response.headers.get('content-type') || 'image/jpeg';
+		const originalArrayBuffer = await response.arrayBuffer();
 
-		// sharp는 기본적으로 애니메이션(GIF, WebP)의 첫 프레임만 읽어들입니다.
-		// 이를 png로 변환하면 빠르고 확실하게 정적 이미지가 생성됩니다.
-		const staticImageBuffer = await sharp(originalBuffer)
-		.png()
-		.toBuffer();
-
-		// Node.js의 Buffer는 내부적으로 큰 ArrayBuffer를 공유(pool)할 수 있으므로,
-		// NextResponse에 안전하게 전달하기 위해 정확한 바이트 구간만 추출한 ArrayBuffer로 변환합니다.
-		const safeArrayBuffer = staticImageBuffer.buffer.slice(
-			staticImageBuffer.byteOffset,
-			staticImageBuffer.byteOffset + staticImageBuffer.byteLength
-		);
-
-		return new NextResponse(safeArrayBuffer, {
+		return new NextResponse(originalArrayBuffer, {
 			headers: {
-				'Content-Type': 'image/png',
+				'Content-Type': contentType,
 				'Cache-Control': 'public, max-age=31536000, immutable',
 			},
 		});
 	} catch (error) {
-		console.error('Error proxying and converting image:', error);
-
-		// sharp 변환에 실패했지만 원본 이미지는 성공적으로 가져온 경우
-		if (originalArrayBuffer) {
-			return new NextResponse(originalArrayBuffer, {
-				headers: {
-					'Content-Type': contentType,
-					'Cache-Control': 'public, max-age=31536000, immutable',
-				},
-			});
-		}
-
-		// 원본 이미지조차 가져오지 못했다면 리다이렉트
+		console.error('Error proxying image:', error);
 		return NextResponse.redirect(url);
 	}
 }
