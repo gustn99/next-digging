@@ -4,7 +4,7 @@ import {Badge, Button, Input} from '@/components/ui';
 import {useStores} from '@/lib/storeHooks';
 import {Store} from '@/lib/types';
 import {getStaticImageUrl} from '@/lib/utils';
-import {ChevronRight, ExternalLink, FolderPlus, Link as LinkIcon, Plus, Search, Star, StickyNote, Trash2} from 'lucide-react';
+import {ChevronRight, ExternalLink, FolderPlus, Link as LinkIcon, Plus, Search, Star, StickyNote, Trash2, Loader2} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 import React, {useEffect, useState} from 'react';
 
@@ -17,26 +17,13 @@ export default function Home() {
 	const [searchQuery, setSearchQuery] = useState('');
 	const [errorMsg, setErrorMsg] = useState('');
 
-	useEffect(() => {
-		if (typeof window !== 'undefined') {
-			const params = new URLSearchParams(window.location.search);
-			const shareUrl = params.get('url') || params.get('text');
+	const processedShare = React.useRef(false);
 
-			if (shareUrl && shareUrl.startsWith('http')) {
-				// eslint-disable-next-line react-hooks/set-state-in-effect
-				setUrlInput(shareUrl);
-				const newUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
-				window.history.replaceState({path: newUrl}, '', newUrl);
-			}
-		}
-	}, []);
-
-	const handleAddLink = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+	const processAddLink = async (targetUrl: string, targetMemo: string, currentStores: Store[]) => {
 		if (isAdding) return;
-		if (!urlInput.trim()) return;
+		if (!targetUrl.trim()) return;
 
-		let normalizedInput = urlInput.trim();
+		let normalizedInput = targetUrl.trim();
 		if (!normalizedInput.startsWith('http')) {
 			normalizedInput = `https://${normalizedInput}`;
 		}
@@ -54,7 +41,7 @@ export default function Home() {
 		const isLikelyNotProduct = /\/(mypage|cart|login|member|board|notice|customer)/i.test(urlObj.pathname);
 		let isProduct = isProductPath && !isLikelyNotProduct;
 
-		const existingStore = stores.find(store => store.url === origin);
+		const existingStore = currentStores.find(store => store.url === origin);
 
 		if (existingStore) {
 			if (isProduct) {
@@ -113,7 +100,7 @@ export default function Home() {
 				isProduct = true;
 			}
 
-			let nextStores = [...stores];
+			let nextStores = [...currentStores];
 			const existingIdx = nextStores.findIndex(s => s.url === origin);
 
 			if (existingIdx !== -1) {
@@ -127,14 +114,14 @@ export default function Home() {
 					const updatedStore = {
 						...existing,
 						products: [newProduct, ...(existing.products || [])],
-						memo: memoInput || existing.memo,
+						memo: targetMemo || existing.memo,
 					};
 					nextStores.splice(existingIdx, 1);
 					nextStores = [updatedStore, ...nextStores];
 				} else {
 					const updatedStore = {
 						...existing,
-						memo: memoInput || existing.memo,
+						memo: targetMemo || existing.memo,
 					};
 					nextStores.splice(existingIdx, 1);
 					nextStores = [updatedStore, ...nextStores];
@@ -169,7 +156,7 @@ export default function Home() {
 					category: '패션/의류',
 					tags,
 					description,
-					memo: memoInput,
+					memo: targetMemo,
 					products,
 					addedAt: new Date().toISOString(),
 				};
@@ -185,6 +172,28 @@ export default function Home() {
 		} finally {
 			setIsAdding(false);
 		}
+	};
+
+	useEffect(() => {
+		if (typeof window !== 'undefined' && isMounted && !processedShare.current) {
+			const params = new URLSearchParams(window.location.search);
+			const shareUrl = params.get('url') || params.get('text');
+
+			if (shareUrl && shareUrl.startsWith('http')) {
+				processedShare.current = true;
+				const newUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+				window.history.replaceState({path: newUrl}, '', newUrl);
+				
+				setUrlInput(shareUrl);
+				processAddLink(shareUrl, '', stores);
+			}
+		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isMounted, stores]);
+
+	const handleAddLink = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		await processAddLink(urlInput, memoInput, stores);
 	};
 
 	const handleDelete = (id: string) => {
@@ -253,8 +262,17 @@ export default function Home() {
 									required
 								/>
 								<Button type="submit" disabled={isAdding} className="shrink-0">
-									{isAdding ? '저장 중...' : '저장하기'}
-									{!isAdding && <Plus className="ml-2 h-4 w-4"/>}
+									{isAdding ? (
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											저장 중...
+										</>
+									) : (
+										<>
+											저장하기
+											<Plus className="ml-2 h-4 w-4"/>
+										</>
+									)}
 								</Button>
 							</div>
 							{errorMsg && <p className="text-red-500 text-sm mt-0 mb-1">{errorMsg}</p>}
