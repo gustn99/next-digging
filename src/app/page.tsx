@@ -4,7 +4,7 @@ import {Badge, Button, Input} from '@/components/ui';
 import {useStores} from '@/lib/storeHooks';
 import {Store} from '@/lib/types';
 import {getStaticImageUrl} from '@/lib/utils';
-import {ChevronRight, ExternalLink, FolderPlus, Link as LinkIcon, Plus, Search, Star, StickyNote, Trash2, Loader2} from 'lucide-react';
+import {ChevronRight, ExternalLink, FolderPlus, Link as LinkIcon, Loader2, Plus, Search, Star, StickyNote, Trash2} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 import React, {useEffect, useState} from 'react';
 
@@ -183,12 +183,13 @@ export default function Home() {
 				processedShare.current = true;
 				const newUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
 				window.history.replaceState({path: newUrl}, '', newUrl);
-				
+
+				// eslint-disable-next-line react-hooks/set-state-in-effect
 				setUrlInput(shareUrl);
 				processAddLink(shareUrl, '', stores);
 			}
 		}
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isMounted, stores]);
 
 	const handleAddLink = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -229,11 +230,11 @@ export default function Home() {
 							{/*<span>gging</span>*/}
 						</h1>
 					</div>
-					<nav className="hidden sm:flex gap-6 text-sm font-medium text-zinc-500">
+					{/* <nav className="hidden sm:flex gap-6 text-sm font-medium text-zinc-500">
 						<a href="#" className="text-zinc-900">내 아카이브</a>
 						<a href="#" className="hover:text-zinc-900">컬렉션</a>
 						<a href="#" className="hover:text-zinc-900">탐색</a>
-					</nav>
+					</nav> */}
 					<div className="w-8"/>
 				</div>
 			</header>
@@ -264,7 +265,7 @@ export default function Home() {
 								<Button type="submit" disabled={isAdding} className="shrink-0">
 									{isAdding ? (
 										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											<Loader2 className="mr-2 h-4 w-4 animate-spin"/>
 											저장 중...
 										</>
 									) : (
@@ -276,13 +277,13 @@ export default function Home() {
 								</Button>
 							</div>
 							{errorMsg && <p className="text-red-500 text-sm mt-0 mb-1">{errorMsg}</p>}
-							<Input
+							{/* <Input
 								type="text"
 								placeholder="이 스토어/상품에 대한 메모를 남겨보세요"
 								value={memoInput}
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMemoInput(e.target.value)}
 								className="bg-zinc-50/50"
-							/>
+							/> */}
 						</form>
 					</div>
 				</section>
@@ -405,10 +406,10 @@ export default function Home() {
 												{tag}
 											</span>
 										))}
-										<button className="inline-flex items-center text-xs px-2 py-0.5 border border-dashed border-zinc-300 text-zinc-400 rounded-md hover:bg-zinc-50 hover:text-zinc-600 transition-colors whitespace-nowrap">
+										{/* <button className="inline-flex items-center text-xs px-2 py-0.5 border border-dashed border-zinc-300 text-zinc-400 rounded-md hover:bg-zinc-50 hover:text-zinc-600 transition-colors whitespace-nowrap">
 											<Plus className="h-3 w-3 mr-1"/>
 											태그
-										</button>
+										</button> */}
 									</div>
 									<span className="text-xs text-zinc-400 whitespace-nowrap ml-4">
 										{new Date(store.addedAt).toLocaleDateString()}
