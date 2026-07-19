@@ -4,7 +4,7 @@ import {Badge, Button, Input} from '@/components/ui';
 import {useStores} from '@/lib/storeHooks';
 import {Store} from '@/lib/types';
 import {getStaticImageUrl} from '@/lib/utils';
-import {ChevronRight, ExternalLink, FolderPlus, Link as LinkIcon, Loader2, Plus, Search, Star, StickyNote, Trash2} from 'lucide-react';
+import {Check, ChevronRight, Download, ExternalLink, FolderPlus, Link as LinkIcon, Loader2, Plus, Search, Star, StickyNote, Trash2} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 import React, {useEffect, useState} from 'react';
 
@@ -16,6 +16,7 @@ export default function Home() {
 	const [isAdding, setIsAdding] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [errorMsg, setErrorMsg] = useState('');
+	const [showToast, setShowToast] = useState(false);
 
 	const processedShare = React.useRef(false);
 
@@ -201,6 +202,24 @@ export default function Home() {
 		saveStores(stores.filter(store => store.id !== id));
 	};
 
+	const handleExport = () => {
+		if (stores.length === 0) return;
+
+		const exportText = stores.map(store => {
+			let text = `[${store.storeName}]\n스토어 링크: ${store.url}\n`;
+			const userProducts = store.products?.filter(p => !p.isCrawled) || [];
+			if (userProducts.length > 0) {
+				text += `상세 링크:\n` + userProducts.map(p => `- ${p.url}`).join('\n') + `\n`;
+			}
+			return text.trim();
+		}).join('\n\n');
+
+		navigator.clipboard.writeText(exportText).then(() => {
+			setShowToast(true);
+			setTimeout(() => setShowToast(false), 3000);
+		});
+	};
+
 	const filteredStores = stores.filter(store => {
 		const query = searchQuery.toLowerCase();
 		return (
@@ -235,7 +254,10 @@ export default function Home() {
 						<a href="#" className="hover:text-zinc-900">컬렉션</a>
 						<a href="#" className="hover:text-zinc-900">탐색</a>
 					</nav> */}
-					<div className="w-8"/>
+					<Button variant="outline" size="sm" onClick={handleExport} className="flex items-center gap-2">
+						<Download className="h-4 w-4"/>
+						<span className="hidden sm:inline">내보내기</span>
+					</Button>
 				</div>
 			</header>
 
@@ -420,6 +442,13 @@ export default function Home() {
 					</div>
 				)}
 			</main>
+
+			{showToast && (
+				<div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900 text-white px-4 py-2.5 rounded-full shadow-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50">
+					<Check className="h-4 w-4 text-green-400" />
+					쇼핑몰 목록이 클립보드에 복사되었습니다.
+				</div>
+			)}
 		</div>
 	);
 }
