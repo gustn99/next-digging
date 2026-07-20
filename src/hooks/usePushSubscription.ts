@@ -18,9 +18,19 @@ export const usePushSubscription = () => {
   const subscribeToPush = async () => {
     setIsSubscribing(true);
     try {
-      // 1. 브라우저 알림 권한 요청
+      // 1. 로컬 스토리지에서 UUID를 미리 가져옵니다 (거부 시에도 보내기 위함)
+      const userId = getOrCreateUserId();
+
+      // 2. 브라우저 알림 권한 요청
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
+        // [추가] 사용자가 권한을 거절하거나 창을 닫은 경우 서버에 상태 기록
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, agreed: false, subscription: null })
+        }).catch(e => console.error('Failed to log push decline:', e));
+
         alert('푸시 알림 권한이 거부되었습니다. 설정에서 권한을 허용해주세요.');
         return false;
       }
@@ -54,8 +64,7 @@ export const usePushSubscription = () => {
       });
       console.log('[Push] Subscription successful:', subscription);
 
-      // 4. 로컬 스토리지에서 UUID 가져오기
-      const userId = getOrCreateUserId();
+      // 4. (userId는 위에서 이미 생성함)
 
       // 5. 서버로 구독 정보와 userId 전송하여 DB에 저장 (push_agreed_at 갱신)
       const response = await fetch('/api/push/subscribe', {

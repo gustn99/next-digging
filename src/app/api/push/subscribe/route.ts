@@ -11,22 +11,24 @@ webpush.setVapidDetails(
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, subscription } = body;
+    const { userId, subscription, agreed = true } = body;
 
-    if (!userId || !subscription) {
-      return NextResponse.json({ error: 'Missing userId or subscription' }, { status: 400 });
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
+    }
+    if (agreed && !subscription) {
+      return NextResponse.json({ error: 'Missing subscription when agreed is true' }, { status: 400 });
     }
 
     // Supabase users 테이블 업데이트 (해당 유저가 없으면 upsert 됨)
-    // push_agreed: true
-    // push_agreed_at: 현재 시간 (이 시간을 기준으로 이틀 뒤를 계산함)
+    // 거절(agreed=false)일 경우 push_subscription은 null 처리
     const { error } = await supabaseAdmin
       .from('users')
       .upsert({
         id: userId,
-        push_agreed: true,
-        push_agreed_at: new Date().toISOString(),
-        push_subscription: subscription,
+        push_agreed: agreed,
+        push_agreed_at: agreed ? new Date().toISOString() : null,
+        push_subscription: agreed ? subscription : null,
       }, { onConflict: 'id' });
 
     if (error) {
