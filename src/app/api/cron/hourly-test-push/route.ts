@@ -3,7 +3,6 @@ import {NextResponse} from 'next/server';
 import webpush from 'web-push';
 
 // Vercel Cron Auth (optional but recommended for security)
-// https://vercel.com/docs/cron-jobs/manage-cron-jobs#securing-cron-jobs
 const CRON_SECRET = process.env.CRON_SECRET;
 
 webpush.setVapidDetails(
@@ -14,34 +13,27 @@ webpush.setVapidDetails(
 
 export async function GET(request: Request) {
 	try {
-		// 1. (Optional) Verify Vercel Cron Secret to ensure only Vercel can trigger this
+		// 1. Verify Vercel Cron Secret
 		const authHeader = request.headers.get('authorization');
 		if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
 			return NextResponse.json({error: 'Unauthorized'}, {status: 401});
 		}
 
-		// 2. Calculate the target date (2 days ago)
-		// '푸시 알림에 동의한 지 이틀 뒤' 조건을 위해 이틀 전 날짜를 구합니다.
-		const twoDaysAgo = new Date();
-		twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-
-		const startOfDay = new Date(twoDaysAgo.setHours(0, 0, 0, 0)).toISOString();
-		const endOfDay = new Date(twoDaysAgo.setHours(23, 59, 59, 999)).toISOString();
+		// 2. 시간 계산 (현재 시간 기준 1시간 전 ~ 현재 사이)
+		// 매시간 정각에 Cron이 돌 때, 최근 1시간 이내에 가입한 유저들을 타겟팅하면
+		// 가입 후 다가오는 가장 빠른 정각에 알림을 받게 됩니다.
+		const now = new Date();
+		const nowIso = now.toISOString();
+		const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
 
 		// 3. Query users
-		// 조건:
-		// - push_agreed_at (푸시 동의 일시)가 이틀 전(startOfDay ~ endOfDay)인 사용자
-		// - 푸시 알림에 동의 상태 유지 중 (push_agreed: true)
 		const {data: eligibleUsers, error} = await supabaseAdmin
 		.from('users')
-		.select(`
-        id,
-        push_subscription
-      `)
+		.select('id, push_subscription')
 		.eq('push_agreed', true)
 		.not('push_subscription', 'is', null)
-		.gte('push_agreed_at', startOfDay)
-		.lte('push_agreed_at', endOfDay);
+		.gte('push_agreed_at', oneHourAgo)
+		.lt('push_agreed_at', nowIso);
 
 		if (error) {
 			console.error('Error fetching users:', error);
@@ -50,8 +42,8 @@ export async function GET(request: Request) {
 
 		const notificationPayload = JSON.stringify({
 			title: 'Digging',
-			body: '찜해둔 쇼핑몰이 조용히 기다리고 있어요 👀',
-			url: '/', // 알림 클릭 시 메인 페이지로 이동
+			body: '아카이빙을 시작해 보세요 👀',
+			url: '/',
 		});
 
 		// 4. Send Push Notifications
@@ -63,11 +55,10 @@ export async function GET(request: Request) {
 					user.push_subscription as webpush.PushSubscription,
 					notificationPayload,
 				);
-				console.log(`Successfully sent push to user: ${user.id}`);
+				console.log(`Successfully sent hourly test push to user: ${user.id}`);
 			} catch (err: any) {
-				console.error(`Failed to send push to user ${user.id}:`, err);
+				console.error(`Failed to send hourly test push to user ${user.id}:`, err);
 
-				// 구독이 만료되었거나 유효하지 않은 경우 DB에서 삭제 (옵션)
 				if (err.statusCode === 404 || err.statusCode === 410) {
 					await supabaseAdmin
 					.from('users')
@@ -82,10 +73,11 @@ export async function GET(request: Request) {
 		return NextResponse.json({
 			success: true,
 			message: `Sent ${pushPromises.length} notifications.`,
+			window: {start: oneHourAgo, end: nowIso},
 		});
 
 	} catch (error) {
-		console.error('Cron job error:', error);
+		console.error('Hourly cron job error:', error);
 		return NextResponse.json({error: 'Internal server error'}, {status: 500});
 	}
 }
