@@ -26,23 +26,33 @@ export const usePushSubscription = () => {
       }
 
       // 2. 서비스 워커 등록 확인
-      const registration = await navigator.serviceWorker.ready;
+      console.log('[Push] Check service worker registration...');
+      let registration = await navigator.serviceWorker.getRegistration();
+      
       if (!registration) {
-        console.error('Service Worker is not registered');
-        return false;
+        console.log('[Push] No registration found, attempting to register /sw.js manually...');
+        registration = await navigator.serviceWorker.register('/sw.js');
+      }
+      
+      // ready가 영원히 멈추는 것을 방지하기 위해 등록된 registration을 바로 사용하거나 ready를 기다립니다.
+      registration = await navigator.serviceWorker.ready;
+
+      if (!registration) {
+        throw new Error('Service Worker is not registered');
       }
 
+      console.log('[Push] Service worker is ready. Subscribing to push manager...');
       // 3. Push Manager 구독
       const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!vapidPublicKey) {
-        console.error('VAPID Public Key is missing');
-        return false;
+        throw new Error('VAPID Public Key is missing in environment variables');
       }
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
       });
+      console.log('[Push] Subscription successful:', subscription);
 
       // 4. 로컬 스토리지에서 UUID 가져오기
       const userId = getOrCreateUserId();
