@@ -7,6 +7,7 @@ const withPWA = withPWAInit({
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   disable: false, // For testing PWA in local development
+  customWorkerSrc: "worker",
 });
 
 const nextConfig: NextConfig = {
