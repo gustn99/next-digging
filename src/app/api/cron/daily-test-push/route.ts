@@ -19,21 +19,30 @@ export async function GET(request: Request) {
 			return NextResponse.json({error: 'Unauthorized'}, {status: 401});
 		}
 
-		// 2. 시간 계산 (현재 시간 기준 1시간 전 ~ 현재 사이)
-		// 매시간 정각에 Cron이 돌 때, 최근 1시간 이내에 가입한 유저들을 타겟팅하면
-		// 가입 후 다가오는 가장 빠른 정각에 알림을 받게 됩니다.
-		const now = new Date();
-		const nowIso = now.toISOString();
-		const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+    // 2. 시간 계산 (기준: UTC 06:00 = KST 오후 3시)
+    // Vercel Cron은 실행 시간이 3:00 ~ 3:59 사이로 유동적이므로, 
+    // 실행 시점(now) 기준 24시간을 빼면 중복이나 누락이 발생할 수 있습니다.
+    // 따라서 고정된 '오늘 오후 3시 정각'과 '어제 오후 3시 정각'을 기준으로 조회합니다.
+    const today3PM = new Date();
+    today3PM.setUTCHours(6, 0, 0, 0); // UTC 06:00 = KST 15:00
+    
+    // 만약 크론이 정각보다 약간 일찍 돌아서(예: 2:59) today3PM이 미래가 되는 것을 방지
+    if (new Date().getTime() < today3PM.getTime()) {
+      today3PM.setDate(today3PM.getDate() - 1);
+    }
+    
+    const yesterday3PM = new Date(today3PM.getTime() - 24 * 60 * 60 * 1000);
+    const windowStart = yesterday3PM.toISOString();
+    const windowEnd = today3PM.toISOString();
 
-		// 3. Query users
-		const {data: eligibleUsers, error} = await supabaseAdmin
-		.from('users')
-		.select('id, push_subscription')
-		.eq('push_agreed', true)
-		.not('push_subscription', 'is', null)
-		.gte('push_agreed_at', oneHourAgo)
-		.lt('push_agreed_at', nowIso);
+    // 3. Query users
+    const {data: eligibleUsers, error} = await supabaseAdmin
+      .from('users')
+      .select('id, push_subscription')
+      .eq('push_agreed', true)
+      .not('push_subscription', 'is', null)
+      .gte('push_agreed_at', windowStart)
+      .lt('push_agreed_at', windowEnd);
 
 		if (error) {
 			console.error('Error fetching users:', error);
@@ -73,7 +82,7 @@ export async function GET(request: Request) {
 		return NextResponse.json({
 			success: true,
 			message: `Sent ${pushPromises.length} notifications.`,
-			window: {start: oneHourAgo, end: nowIso},
+			window: {start: windowStart, end: windowEnd},
 		});
 
 	} catch (error) {
