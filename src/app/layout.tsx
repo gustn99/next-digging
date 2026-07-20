@@ -37,6 +37,8 @@ export const viewport: Viewport = {
 	maximumScale: 1,
 };
 
+import GlobalPushPrompt from '@/components/GlobalPushPrompt';
+
 export default function RootLayout({
 	children,
 }: Readonly<{
@@ -53,6 +55,7 @@ export default function RootLayout({
 					<PostHogPageView />
 				</Suspense>
 				{children}
+				<GlobalPushPrompt />
 			</PostHogProvider>
 		</body>
 		</html>
